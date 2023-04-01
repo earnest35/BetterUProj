@@ -21,7 +21,7 @@ export function Planner({navigation}){
         const data = querySnapshot.docs.map(doc => doc.data().title);
         setWorkoutTitles(data);
       })
-      .catch(error => console.error('Error getting documents:', error));
+      .catch(error => console.error('Error getting workout:', error));
   }, []);
   useEffect(() => {
     const collectionRef = collection(db, 'food');
@@ -30,7 +30,7 @@ export function Planner({navigation}){
         const data = querySnapshot.docs.map(doc => doc.data().title);
         setFoodTitles(data);
       })
-      .catch(error => console.error('Error getting documents:', error));
+      .catch(error => console.error('Error getting food:', error));
   }, []);
     return(
       <ScrollView style={{flex:1}}>
