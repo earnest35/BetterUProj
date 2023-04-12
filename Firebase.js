@@ -33,22 +33,11 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 /*const settings = {timestampsInSnapshots: true}
 db.settings(settings);*/
-const postsCollection = collection(db, 'posts');
+
 
 // Create a new post object
-const newPost = {
-  title: 'My first post',
-  content: 'This is the content of my first post.',
-  author: 'John Doe',
-  date: new Date(),
-};
+
 
 // Add the new post to the "posts" collection
-addDoc(postsCollection, newPost)
-  .then((docRef) => {
-    console.log('New post added with ID:', docRef.id);
-  })
-  .catch((error) => {
-    console.error('Error adding post:', error);
-  });
+
 export { auth,db };

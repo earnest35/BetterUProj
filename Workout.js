@@ -4,6 +4,8 @@ import { Header } from './Header';
 import { useState } from 'react';
 import { db } from './Firebase';
 import { addDoc, collection, DocumentReference } from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useEffect } from 'react';
 import { workoutItems } from './WorkoutComponent';
     export function Workout(){
       const pairs = workoutItems.reduce((result, item, index) => {
@@ -14,27 +16,41 @@ import { workoutItems } from './WorkoutComponent';
         }
         return result;
       }, []);
-      const workoutCollection = collection(db,'workout');
       const [selectedWorkout,setSelectedWorkout] = useState([]);
+      const userWorkoutCollection = collection(db, 'userWorkouts');
+      const [userId, setUserId] = useState(null);
+      useEffect(() => {
+        const auth = getAuth();
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (user) {
+            setUserId(user.uid);
+          } else {
+            setUserId(null);
+          }
+        });
+        return unsubscribe;
+      }, []);
+      const foodRef = userId ? collection(userWorkoutCollection, userId, 'workouts') : null;
       const viewSelectedWorkouts = () => {
         setSelectedWorkout(workouts => [...workouts, workout])
       }
       const handleAddWorkout = (workout) => {
         const alreadySelected = selectedWorkout.find((selected) => selected.id === workout.id);
         if (!alreadySelected) {
+          addDoc(userWorkoutCollection,workout)
+          .then((docRef) =>{
+            console.log(`Successfully posted ${workout.title} with ID:${docRef.id}`)
+           })
+          .catch((error) =>{
+            console.log(`Error adding post ${error}`)
+          })
           setSelectedWorkout((prevSelectedWorkouts) => [...prevSelectedWorkouts, workout]);
           console.log(`Added ${workout.title} to selected workouts.`);
         } else {
           console.log(`${workout.title} is already selected.`);
         }
 
-        addDoc(workoutCollection,workout)
-    .then((docRef) =>{
-      console.log(`Successfully posted ${workout.title} with ID:${docRef.id}`)
-    })
-    .catch((error) =>{
-      console.log(`Error adding post ${error}`)
-    })
+        
   }
       return(
         <ScrollView style={{flex:1,backgroundColor:'lightgray'}}>
