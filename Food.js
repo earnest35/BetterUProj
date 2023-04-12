@@ -1,41 +1,53 @@
 import {Image,ScrollView, StyleSheet, Text, View } from 'react-native';
 import React, { useState } from 'react';
 import { TouchableOpacity } from 'react-native';
-import { Button } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useEffect } from 'react';
+import 'firebase/auth';
+import 'firebase/firestore';
 import { db } from './Firebase';
 import { addDoc, collection, DocumentReference } from 'firebase/firestore';
 import { foodItems } from './FoodComponent';
 export const Food = () => {
-  const foodCollection = collection(db,'food');
   const [selectedFood,setSelectedFood] = useState([]);
+  const userFoodsCollection = collection(db, 'userFoods');
+  const [userId, setUserId] = useState(null);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        setUserId(null);
+      }
+    });
+    return unsubscribe;
+  }, []);
+  const foodRef = userId ? collection(userFoodsCollection, userId, 'foods') : null;
   const viewSelectedWorkouts = () => {
     setSelectedFood(foods => [...foods, food])
   }
+  
   const handleAddFood = (food) => {
     const alreadySelected = selectedFood.find((selected) => selected.id === food.id);
     if (!alreadySelected) {
       setSelectedFood((prevSelectedFoods) => [...prevSelectedFoods, food]);
-      console.log(`Added ${food.title} to selected workouts.`);
-    } else {
-      console.log(`${food.title} is already selected.`);
-    }
-
-    addDoc(foodCollection,food)
+      console.log(`Added ${food.title} to selected foods.`);
+      addDoc(foodRef,food)
     .then((docRef) =>{
       console.log(`Successfully posted ${food.title} with ID:${docRef.id}`)
     })
     .catch((error) =>{
       console.log(`Error adding post ${error}`)
     })
+    } else {
+      console.log(`${food.title} is already selected.`);
+    }
+
+    
   }
-  /*addDoc(postsCollection, newPost)
-  .then((docRef) => {
-    console.log('New post added with ID:', docRef.id);
-  })
-  .catch((error) => {
-    console.error('Error adding post:', error);
-  }); */
+  
   const pairs = foodItems.reduce((result, item, index) => {
     if (index % 2 === 0) {
       result.push([item]);

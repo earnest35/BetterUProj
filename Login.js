@@ -1,10 +1,11 @@
-//Fat Big Black Nigger Penis
+
 import { StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { TextInput } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native';
 import { TouchableOpacity } from 'react-native';
 import { getAuth, signInWithEmailAndPassword,createUserWithEmailAndPassword } from "firebase/auth";
+import { useCallback } from 'react';
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { firebase } from './Firebase';
 import "firebase/auth";
@@ -15,13 +16,12 @@ import { Planner } from './Planner';
 export const Login = ({navigation}) => {
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');
-    const [user, setUser] = useState(null);
-    const [isLogged,setIsLoggged] = useState(false);
-    const auth = getAuth();
-      const handleRegister = async (email, password, setError) => {
+    const [isInProgress, setIsInProgress] = useState(false);
+   const auth = getAuth();
+      const handleRegister = useCallback(async (email, password, setError) => {
+        setIsInProgress(true);
         try {
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          // Registered and signed in
           const user = userCredential.user;
           console.log(user);
           navigation.navigate('Planner');
@@ -30,11 +30,12 @@ export const Login = ({navigation}) => {
           const errorMessage = error.message;
           setError(errorMessage);
         }
-      };
-      const handleLogin = async (email, password, setError) => {
+        setIsInProgress(false);
+      },[auth,navigation]);
+      const handleLogin = useCallback(async (email, password, setError) => {
+        setIsInProgress(true);
         try {
           const userCredential = await signInWithEmailAndPassword(auth, email, password);
-          // Signed in
           const user = userCredential.user;
           console.log(user);
           navigation.navigate('Planner');
@@ -43,8 +44,18 @@ export const Login = ({navigation}) => {
           const errorMessage = error.message;
           setError(errorMessage);
         }
+        setIsInProgress(false)
+      },[auth,navigation]);
+      const handleEmailChange = (text) => {
+        if (!isInProgress) {
+          setEmail(text);
+        }
       };
-    
+      const handlePasswordChange = (text) => {
+        if (!isInProgress) {
+          setPassword(text);
+        }
+      };
   return (
     <KeyboardAvoidingView>
         <View style={styles.inputContainer}>
@@ -53,23 +64,23 @@ export const Login = ({navigation}) => {
             <TextInput
             placeholder="JohnDoe@gmail.com"
             value={email}
-            onChangeText={text => setEmail(text)}
+            onChangeText={handleEmailChange}
             style={styles.input}/>
             <Text style={{color:'white',fontSize:15,marginTop:10}}>Password</Text>
             <TextInput
             value={password}
             placeholder="Password123"
-           onChangeText={text => setPassword(text)}
+           onChangeText={handlePasswordChange}
             secureTextEntry
             style={styles.input}/>
             <View style={{flexDirection:'row'}}>
             <TouchableOpacity
-           // onPress={() =>handleLogin(email,password,console.log)}
+           onPress={() =>handleLogin(email,password,console.log)}
             style={[styles.button,styles.buttonOutline,{positon:'relative'},{marginLeft:4}]}>
                 <Text style={[styles.buttonText,{color:'black'},]}>Login</Text>
             </TouchableOpacity>
             <TouchableOpacity
-            //onPress={handleRegister(email, password, console.log)}
+            onPress={() => handleRegister(email, password, console.log)}
             style={[styles.button,styles.buttonOutline,{positon:'relative'},{marginLeft:15}]}>
                 <Text style={[styles.buttonText,{color:'black'}]}>Register</Text>
             </TouchableOpacity>

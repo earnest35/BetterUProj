@@ -15,22 +15,36 @@ export function Planner({navigation}){
   const [foodTitles, setFoodTitles] = useState([]);
   
   useEffect(() => {
-    const collectionRef = collection(db, 'workout');
-    getDocs(collectionRef)
-      .then(querySnapshot => {
-        const data = querySnapshot.docs.map(doc => doc.data().title);
-        setWorkoutTitles(data);
-      })
-      .catch(error => console.error('Error getting workout:', error));
-  }, []);
-  useEffect(() => {
-    const collectionRef = collection(db, 'food');
-    getDocs(collectionRef)
-      .then(querySnapshot => {
+    const user = firebase.auth().currentUser;
+    const userId = user ? user.uid : null;
+    const foodRef = userId ? collection(db, 'userFoods', userId, 'foods') : null;
+    
+    if (foodRef) {
+      const unsubscribe = onSnapshot(foodRef, (querySnapshot) => {
         const data = querySnapshot.docs.map(doc => doc.data().title);
         setFoodTitles(data);
-      })
-      .catch(error => console.error('Error getting food:', error));
+      }, (error) => {
+        console.error('Error getting food:', error);
+      });
+      
+      return unsubscribe;
+    }
+  }, []);
+  useEffect(() => {
+    const user = firebase.auth().currentUser;
+    const userId = user ? user.uid : null;
+    const foodRef = userId ? collection(db, 'userWorkouts', userId, 'workouts') : null;
+    
+    if (foodRef) {
+      const unsubscribe = onSnapshot(foodRef, (querySnapshot) => {
+        const data = querySnapshot.docs.map(doc => doc.data().title);
+        setWorkoutTitles(data);
+      }, (error) => {
+        console.error('Error getting workout:', error);
+      });
+      
+      return unsubscribe;
+    }
   }, []);
     return(
       <ScrollView style={{flex:1}}>
