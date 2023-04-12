@@ -10,4 +10,14 @@ export const foodItems = [
     {id:9,title: "Almonds(1 oz)", calories:163,source: require('./assets/almonds.jpg')},
     {id:10,title: "Blueberries(1 cup)", calories:84,source: require('./assets/blueberries.jpg')},
   
+    {id:11,title: "Banana(1)", calories:105,source: require('./assets/bananas.png')},
+    {id:12,title: "apple(1)", calories:95,source: require('./assets/apple.jpg')},
+    {id:13,title: "Potato(1)", calories:110,source: require('./assets/potatos.jpg')},
+    {id:14,title: "broccoli(1)", calories:50,source: require('./assets/broccoli.jpg')},
+    {id:15,title: "fried Chiken(1)", calories:83,source: require('./assets/friedChicken.jpg')},
+    {id:16,title: "brown rice(1 package)", calories:216,source: require('./assets/brownRice.jpg')},
+    {id:17,title: "Orange(1)", calories:45,source: require('./assets/orange.jpg')},
+    {id:18,title: "peanuts(1 cup)", calories:828,source: require('./assets/peanuts.jpg')},
+    {id:19,title: "pancakes(1)", calories:84,source: require('./assets/pancakes.jpg')},
+    {id:20,title: "waffles(1)", calories:82,source: require('./assets/waffle.png')},
   ]
