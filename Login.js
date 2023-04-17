@@ -13,6 +13,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { Planner } from './Planner';
+import { Header } from './Header';
 export const Login = ({navigation}) => {
     const [email,setEmail] = useState('');
     const [password,setPassword] = useState('');
@@ -57,7 +58,8 @@ export const Login = ({navigation}) => {
         }
       };
   return (
-    <KeyboardAvoidingView>
+    <KeyboardAvoidingView style={styles.BACKGROUND}>
+      <Header/>
         <View style={styles.inputContainer}>
           <Text style={{color:'white',fontSize:20,textAlign:'center'}}>Login</Text>
             <Text style={{color:'white',fontSize:15,}}>Email</Text>
@@ -93,6 +95,10 @@ export const Login = ({navigation}) => {
   
   }
 const styles = StyleSheet.create({
+  BACKGROUND:{
+    backgroundColor:'#D4D4D4',
+    height:'100%'
+  },
     inputContainer:{
         width:250,
         height:300,

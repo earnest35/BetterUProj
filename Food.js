@@ -8,6 +8,7 @@ import 'firebase/firestore';
 import { db } from './Firebase';
 import { addDoc, collection, DocumentReference } from 'firebase/firestore';
 import { foodItems } from './FoodComponent';
+import { Header } from './Header';
 export const Food = () => {
   const [selectedFood,setSelectedFood] = useState([]);
   const userFoodsCollection = collection(db, 'userFoods');
@@ -58,6 +59,7 @@ export const Food = () => {
   }, []);
   return(
     <ScrollView style={{flex:1,backgroundColor:'lightgray'}}>
+      <Header/>
       <View style={{marginTop:30,marginBottom:30,borderRadius:5,overflow:'hidden'}}>
         <Text>Selected Foods:</Text>
         <ScrollView horizontal={true} contentContainerStyle={{flexDirection:'row', marginBottom:15, borderRadius:5, overflow:'hidden', justifyContent:'center', alignItems:'center'}}>

@@ -8,14 +8,6 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useEffect } from 'react';
 import { workoutItems } from './WorkoutComponent';
     export function Workout(){
-      const pairs = workoutItems.reduce((result, item, index) => {
-        if (index % 2 === 0) {
-          result.push([item]);
-        } else {
-          result[result.length - 1].push(item);
-        }
-        return result;
-      }, []);
       const [selectedWorkout,setSelectedWorkout] = useState([]);
       const userWorkoutCollection = collection(db, 'userWorkouts');
       const [userId, setUserId] = useState(null);
@@ -49,11 +41,18 @@ import { workoutItems } from './WorkoutComponent';
         } else {
           console.log(`${workout.title} is already selected.`);
         }
-
-        
   }
+  const pairs = workoutItems.reduce((result, item, index) => {
+    if (index % 2 === 0) {
+      result.push([item]);
+    } else {
+      result[result.length - 1].push(item);
+    }
+    return result;
+  }, []);
       return(
         <ScrollView style={{flex:1,backgroundColor:'lightgray'}}>
+          <Header/>
           <View style={{marginTop:30,marginBottom:30,borderRadius:5,overflow:'hidden'}}>
         <Text>Selected Workouts:</Text>
         <ScrollView horizontal={true} contentContainerStyle={{flexDirection:'row', marginBottom:15, borderRadius:5, overflow:'hidden', justifyContent:'center', alignItems:'center'}}>
