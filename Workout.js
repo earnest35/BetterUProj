@@ -1,4 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
+import { FlatList } from 'react-native';
 import { TouchableOpacity,Button, Image,ScrollView,StyleSheet, Text, View } from 'react-native';
 import { Header } from './Header';
 import { useState } from 'react';
@@ -7,6 +8,8 @@ import { addDoc, collection, DocumentReference } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useEffect } from 'react';
 import { workoutItems } from './WorkoutComponent';
+import { sets } from './WorkoutComponent';
+import { reps } from './WorkoutComponent';
     export function Workout(){
       const [selectedWorkout,setSelectedWorkout] = useState([]);
       const userWorkoutCollection = collection(db, 'userWorkouts');
@@ -34,7 +37,7 @@ import { workoutItems } from './WorkoutComponent';
             console.log(`Successfully posted ${workout.title} with ID:${docRef.id}`)
            })
           .catch((error) =>{
-            console.log(`Error adding post ${error}`)
+            console.log(`Error adding workout ${error}`)
           })
           setSelectedWorkout((prevSelectedWorkouts) => [...prevSelectedWorkouts, workout]);
           console.log(`Added ${workout.title} to selected workouts.`);
@@ -42,129 +45,105 @@ import { workoutItems } from './WorkoutComponent';
           console.log(`${workout.title} is already selected.`);
         }
   }
-  const pairs = workoutItems.reduce((result, item, index) => {
-    if (index % 2 === 0) {
-      result.push([item]);
-    } else {
-      result[result.length - 1].push(item);
-    }
-    return result;
-  }, []);
       return(
-        <ScrollView style={{flex:1,backgroundColor:'lightgray'}}>
-          <Header/>
-          <View style={{marginTop:30,marginBottom:30,borderRadius:5,overflow:'hidden'}}>
+        <View style={{ flex: 1, backgroundColor: 'lightgray' }}>
+      <View style={{ marginTop: 30, marginBottom: 30, borderRadius: 5, overflow: 'hidden' }}>
         <Text>Selected Workouts:</Text>
-        <ScrollView horizontal={true} contentContainerStyle={{flexDirection:'row', marginBottom:15, borderRadius:5, overflow:'hidden', justifyContent:'center', alignItems:'center'}}>
-        {selectedWorkout.map((workout,index) => (
-          <Text key={index} style={{backgroundColor:'whitesmoke',color:'black',padding:8,marginHorizontal:5,fontSize:10,marginBottom: 5,fontSize:10}}>{workout.title}</Text>
-        ))}
+        <ScrollView
+          horizontal={true}
+          contentContainerStyle={{
+            flexDirection: 'row',
+            marginBottom: 15,
+            borderRadius: 5,
+            overflow: 'hidden',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          {selectedWorkout.map((workout, index) => (
+            <Text
+              key={index}
+              style={{
+                backgroundColor: 'whitesmoke',
+                color: 'black',
+                padding: 8,
+                marginHorizontal: 5,
+                fontSize: 10,
+                marginBottom: 5,
+                fontSize: 10,
+                marginBottom: 5,
+                fontSize: 10,
+              }}>
+              {workout.title}
+            </Text>
+          ))}
         </ScrollView>
       </View>
-        {pairs.map((pair, index) => (
-          <View key={index} style={workoutPageStyles.row}>
-            <View style={workoutPageStyles.column}>
-              <View style={workoutPageStyles.leftContent}>
-                <Image source={pair[0].source} style={workoutPageStyles.image} />
-                <Text style={workoutPageStyles.text}>{pair[0].title}</Text>
-                <TouchableOpacity >
-                    <Text style={workoutPageStyles.addNow} onPress={() => handleAddWorkout(pair[1])}>Add Now</Text>
-                </TouchableOpacity>
-              </View>
+      <FlatList
+        data={workoutItems}
+        numColumns={2}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={{ minHeight: '100%' }}
+        renderItem={({ item }) => (
+          <View style={workoutPageStyles.column}>
+            <View style={workoutPageStyles.content}>
+              <Image source={item.source} style={workoutPageStyles.image} />
+              <Text style={workoutPageStyles.text}>{item.title}</Text>
+              <TouchableOpacity>
+                <Text
+                  style={workoutPageStyles.addNow}
+                  onPress={() => handleAddWorkout(item)}>
+                  Add Now
+                </Text>
+              </TouchableOpacity>
             </View>
-            {pair[1] && (
-              <View style={workoutPageStyles.column}>
-                <View style={workoutPageStyles.rightContent}>
-                  <Image source={pair[1].source} style={workoutPageStyles.image} />
-                  <Text style={workoutPageStyles.text}>{pair[1].title}</Text>
-                  <TouchableOpacity >
-                    <Text style={workoutPageStyles.addNow} onPress={() => handleAddWorkout(pair[1])}>Add Now</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
           </View>
-        ))}
-      </ScrollView>
-      );
-            }
+        )}
+      />
+    </View>
+  );
+};
+
       
-      const workoutPageStyles = StyleSheet.create({
-        row: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginBottom: 35,
-          justifyContent:'space-evenly',
-          width:'100%',
-          padding:5,
-          position:'relative',
-          marginHorizontal:10,
-          height:200
-        },
-        text:{
-          fontSize:12,
-          position:'relative',
-          bottom:'25%'
-      
-        },
-        textCalories:{
-        fontSize:10,
-        position:'relative',
-        top:'25%',
-        right:'17%'
-      
-        },
-        addNow:{
-        position:'relative',
-        left:'12%',
-        top:'25%',
-        backgroundColor:'lightblue',
-        color:'white',
-        padding:10,
-        borderRadius:15
-        },
-        textAndButton:{
-          justifyContent : 'center'
-        },
-        column: {
-          flex: 1,
-          alignItems: 'center',
-          borderWidth: 1,
-          borderColor: '#ccc',
-          padding: 10,
-          margin:10,
-          width: '50%',
-          height:'100%',
-          backgroundColor:'white',
-          position:'relative',
-          left:'-5%',
-          
-      
-        },
-        leftContent: {
-          alignItems: 'center',
-          justifyContent: 'center',
-          flex: 1,
-          width:300,
-          height:400
-        },
-        rightContent: {
-          alignItems: 'center',
-          justifyContent: 'center',
-          flex: 1,
-          width:300,
-          height:400
-        },
-        image: {
-          width: 170,
-          height: 100,
-          position:'relative',
-          bottom:'25%',
-      
-      
-        },
-        button:{
-          backgroundColor:'blue'
-        }
-      });
-      
+
+const workoutPageStyles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  column: {
+    flex: 1,
+    marginHorizontal: 5,
+    marginBottom: 10,
+  },
+  content: {
+    backgroundColor: '#fff',
+    height:250,
+    borderRadius: 5,
+    overflow: 'hidden',
+    alignItems: 'center',
+    padding: 10,
+  },
+  image: {
+    width: 150,
+    height: 150,
+    resizeMode: 'cover',
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  addNow: {
+    backgroundColor: 'blue',
+    color: '#fff',
+    padding: 5,
+    borderRadius: 5,
+    marginTop: 5,
+    alignSelf: 'flex-end'
+  },
+});

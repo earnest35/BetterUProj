@@ -1,4 +1,5 @@
 import {Image,ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList } from 'react-native';
 import React, { useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
@@ -11,7 +12,7 @@ import { foodItems } from './FoodComponent';
 import { Header } from './Header';
 export const Food = () => {
   const [selectedFood,setSelectedFood] = useState([]);
-  const userFoodsCollection = collection(db, 'userFoods');
+  const userFoodCollection = collection(db, 'userFoods');
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
@@ -33,147 +34,95 @@ export const Food = () => {
   const handleAddFood = (food) => {
     const alreadySelected = selectedFood.find((selected) => selected.id === food.id);
     if (!alreadySelected) {
+      addDoc(userFoodCollection,food)
+      .then((docRef) =>{
+        console.log(`Successfully posted ${food.title} with ID:${docRef.id}`)
+       })
+      .catch((error) =>{
+        console.log(`Error adding food ${error}`)
+      })
       setSelectedFood((prevSelectedFoods) => [...prevSelectedFoods, food]);
       console.log(`Added ${food.title} to selected foods.`);
-      addDoc(foodRef,food)
-    .then((docRef) =>{
-      console.log(`Successfully posted ${food.title} with ID:${docRef.id}`)
-    })
-    .catch((error) =>{
-      console.log(`Error adding post ${error}`)
-    })
     } else {
       console.log(`${food.title} is already selected.`);
     }
-
-    
-  }
+}
   
-  const pairs = foodItems.reduce((result, item, index) => {
-    if (index % 2 === 0) {
-      result.push([item]);
-    } else {
-      result[result.length - 1].push(item);
-    }
-    return result;
-  }, []);
   return(
-    <ScrollView style={{flex:1,backgroundColor:'lightgray'}}>
-      <Header/>
-      <View style={{marginTop:30,marginBottom:30,borderRadius:5,overflow:'hidden'}}>
-        <Text>Selected Foods:</Text>
-        <ScrollView horizontal={true} contentContainerStyle={{flexDirection:'row', marginBottom:15, borderRadius:5, overflow:'hidden', justifyContent:'center', alignItems:'center'}}>
-        {selectedFood.map((food,index) => (
-          <Text key={index} style={{backgroundColor:'whitesmoke',color:'black',padding:8,marginHorizontal:5,fontSize:10,marginBottom: 5,fontSize:10}}>{food.title}</Text>
-        ))}
-        </ScrollView>
-      </View>
-    {pairs.map((pair, index) => (
-      <View key={index} style={foodPageStyles.row}>
-        <View style={foodPageStyles.column}>
-          <View style={[foodPageStyles.leftContent]}>
-            <Image source={pair[0].source} style={foodPageStyles.image} />
-            <Text style={foodPageStyles.text}>{pair[0].title}</Text>
-            <Text style={foodPageStyles.textCalories}>{pair[0].calories} calories</Text>
-            <TouchableOpacity>
-            <Text style={foodPageStyles.addNow}  onPress={() => handleAddFood(pair[0])}>Add Now</Text>
-              </TouchableOpacity>
-          </View>
-        </View>
-        {pair[1] && (
-          <View style={[foodPageStyles.column]}>
-            <View style={foodPageStyles.rightContent}>
-              <Image source={pair[1].source} style={foodPageStyles.image} />
-              <Text style={foodPageStyles.text}>{pair[1].title}</Text>
-              <Text style={foodPageStyles.textCalories}>{pair[1].calories} calories</Text>
-              <TouchableOpacity >
-              <Text style={foodPageStyles.addNow} onPress={() => handleAddFood(pair[1])}>Add Now</Text>
-              </TouchableOpacity>
-              </View>
-          </View>
-        )}
-      </View>
+    <View style={{flex:1,backgroundColor:'lightgray'}}>
+  <Header/>
+  <View style={{marginTop:30,marginBottom:30,borderRadius:5,overflow:'hidden'}}>
+    <Text>Selected Foods:</Text>
+    <ScrollView horizontal={true} contentContainerStyle={{flexDirection:'row', marginBottom:15, borderRadius:5, overflow:'hidden', justifyContent:'center', alignItems:'center'}}>
+    {selectedFood.map((food,index) => (
+      <Text key={index} style={{backgroundColor:'whitesmoke',color:'black',padding:8,marginHorizontal:5,fontSize:10,marginBottom: 5,fontSize:10}}>{food.title}</Text>
     ))}
-  </ScrollView>
+    </ScrollView>
+  </View>
+  <FlatList
+    data={foodItems}
+    numColumns={2}
+    keyExtractor={(item) => item.id.toString()}
+    contentContainerStyle = {{ minHeight:'100%'}}
+    renderItem={({item}) => (
+      <View style={foodPageStyles.column} >
+        <View style={[foodPageStyles.content]}>
+            <Image source={item.source} style={foodPageStyles.image} />
+            <Text style={foodPageStyles.text}>{item.title}</Text>
+            <Text style={[foodPageStyles.text,{position:'relative'},{right:'20%'},{bottom:'5%'}]}>{item.calories} calories</Text>
+            <Text style={foodPageStyles.addNow}
+            onPress={() => handleAddFood(item)}
+            >ADD NOW</Text>
+          </View>
+      </View>
+    )}
+  />
+</View>
+
   );
 }
-
-
 const foodPageStyles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 35,
-    justifyContent:'space-evenly',
-    width:'100%',
-    padding:5,
-    position:'relative',
-    marginHorizontal:10,
-    height:200
-  },
-  text:{
-    fontSize:12,
-    position:'relative',
-    bottom:'25%'
-
-  },
-  textCalories:{
-  fontSize:10,
-  position:'relative',
-  top:'25%',
-  right:'17%'
-
-  },
-  addNow:{
-  position:'relative',
-  left:'12%',
-  top:'25%',
-  backgroundColor:'lightblue',
-  color:'white',
-  padding:10,
-  borderRadius:15
-  },
-  textAndButton:{
-    justifyContent : 'center'
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
   column: {
     flex: 1,
+    marginHorizontal: 5,
+    marginBottom: 10,
+  },
+  content: {
+    backgroundColor: '#fff',
+    height:250,
+    borderRadius: 5,
+    overflow: 'hidden',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ccc',
     padding: 10,
-    margin:10,
-    width: '50%',
-    height:'100%',
-    backgroundColor:'white',
-    position:'relative',
-    left:'-5%',
-    
-
-  },
-  leftContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    width:300,
-    height:400
-  },
-  rightContent: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    width:300,
-    height:400
   },
   image: {
-    width: 170,
-    height: 100,
-    position:'relative',
-    bottom:'25%',
-
-
+    width: 150,
+    height: 150,
+    resizeMode: 'cover',
   },
-  button:{
-    backgroundColor:'blue'
-  }
+  text: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 10,
+    marginBottom: 2,
+  },
+  addNow: {
+    backgroundColor: 'blue',
+    color: '#fff',
+    padding: 5,
+    borderRadius: 5,
+    marginTop: 5,
+    alignSelf: 'flex-end',
+    position:'relative',
+    left:'10%',
+    bottom:'10%'
+  },
 });

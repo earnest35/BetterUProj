@@ -5,32 +5,26 @@ import { Workout } from './Workout';
 import { Login } from './Login';
 import { Food } from './Food';
 import { Planner } from './Planner';
+import Goals from './Goals';
 import { PhotoProgression } from './PhotoProgression';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { registerRootComponent } from 'expo';
+import { MainTabs } from './Planner';
 registerRootComponent(App);
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 export default function App() {
-  
   return (
       <NavigationContainer>
         <Stack.Navigator>
-         
-          <Stack.Screen name="Planner" component={Planner} options={{ headerShown: false }} />
+          <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
           <Stack.Screen name="Workout" component={Workout} options={{ headerShown: false }}/>
           <Stack.Screen name="Food" component={Food} options={{ headerShown: false }}/>
         </Stack.Navigator>
       </NavigationContainer>
-  );  /*
-  return(
-    <View style={styles.container}>
-    <Workout/>
-    {/*<Login/> }
-     
-    </View>
-  )
-  */
+  );  
 }
 const styles = StyleSheet.create({
   container: {

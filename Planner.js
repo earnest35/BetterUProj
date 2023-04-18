@@ -1,21 +1,34 @@
 import { StatusBar } from 'expo-status-bar';
 import { Button, Image,ScrollView,StyleSheet, Text, View } from 'react-native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import { TouchableOpacity } from 'react-native';
 import { Header } from './Header';
-import { Food } from './Food';
-import { Workout } from './Workout';
-import { useNavigation } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { db } from './Firebase';
 import { addDoc, collection, DocumentReference,query,getDocs,deleteDoc,doc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { useState } from 'react';
 import { useEffect } from 'react';
+import { Workout } from './Workout';
+import { Food } from './Food';
 import { onAuthStateChanged } from 'firebase/auth';
+import Goals from './Goals';
+import { Picker } from 'react-native';
+import { PhotoProgression } from './PhotoProgression';
+const Tab = createBottomTabNavigator();
+export function MainTabs() {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen name="PhotoProgression" component={PhotoProgression} />
+      <Tab.Screen name="Planner" component={Planner} />
+      <Tab.Screen name="Goals" component={Goals} />
+      
+    </Tab.Navigator>
+  );
+}
 export function Planner({navigation}){
   const [workoutTitles, setWorkoutTitles] = useState([]);
   const [foodTitles, setFoodTitles] = useState([]);
-const [userId, setUserId] = useState(null);
+  const [userId, setUserId] = useState(null);
 
 useEffect(() => {
   const collectionRef = collection(db, 'userWorkouts');
@@ -126,3 +139,13 @@ const plannerStyles = StyleSheet.create({
 
     }
 })
+const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '100%',
+    justifyContent: 'flex-end',
+  },
+});
