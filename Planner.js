@@ -91,31 +91,37 @@ console.log(workoutTitles);
         <Text style={{fontSize:20,textAlign:'center'}}>Workouts</Text>
       </View>
       <View style={{marginTop:10}}>
-        {workoutTitles.map((title, index) => 
-          <View key={index} style={[plannerStyles.widgetPrompt, {marginBottom:10}]}>
-            <Text style={{fontSize:15,textAlign:'center',justifyContent:'center',padding:10}}>
-              {title.title}
-              {title.sets && title.reps && title.sets > 0 && <Text> - </Text>}
-    <View style={{flexDirection: 'column',marginTop:5}}>
-      {Array.from(Array(title.sets), (_, index) => 
-        <Text key={index}>Set {index + 1} of {title.reps} reps</Text>
-      )}
+  {workoutTitles.map((title, index) => 
+    <View key={index} style={[plannerStyles.widgetPrompt, {marginBottom:10}]}>
+        <Text style={{fontSize:20,textAlign:'center'}}>{title.title}</Text>
+        {title.sets && title.reps && title.sets > 0 && <Text> - </Text>}
+        <View style={{position:'relative',top:0,flexDirection: 'column',marginTop:5}}>
+          {Array.from(Array(title.sets), (_, index) => 
+            <Text style={{fontSize:17}}key={index}>Set {index + 1} of {title.reps} reps</Text>
+          )}
+        </View>
+      
     </View>
-            </Text>
-            
-          </View>
-        )}
+  )}
+</View>
+
+    </View>
+
+    <View style={[{marginTop:10},plannerStyles.widgetPrompt,{backgroundColor:'#707070'}]}>
+  <Text style={{fontSize:20,textAlign:'center'}}>Meal</Text>
+  <View style={[{marginTop:4}, {position:'relative'}, {zIndex:1}]}>
+    <ScrollView horizontal={true} contentContainerStyle={{paddingHorizontal:10}} showsHorizontalScrollIndicator={false}>
+      <View style={[plannerStyles.widgetPromptDecor, plannerStyles.widgetPrompt, {backgroundColor:'#707070'}]}>
+        <View style={{flexDirection:'row'}}>
+          {foodTitles.map((title, index) => 
+            <Text key={index} style={{fontSize:12, marginRight:5, backgroundColor:'white', padding:5}}>{title.title}</Text>
+          )}
+        </View>
+        <View style={{marginTop:10}}>
+          <Text style={{fontSize:12, fontWeight:'bold', color:'white'}}>Total Calories: {foodTitles.reduce((total, title) => total + title.calories, 0)}</Text>
+        </View>
       </View>
-    </View>
-    <Text style={{fontSize:20,textAlign:'center'}}>Meal</Text>
-    <View style={[plannerStyles.widgetPromptDecor, plannerStyles.widgetPrompt, {backgroundColor:'#707070'}, {marginTop:20}, {position:'relative'}, {zIndex:1}]}>
-  <View style={{flexDirection:'row'}}>
-    {foodTitles.map((title, index) => 
-      <Text key={index} style={{fontSize:12, marginRight:5, backgroundColor:'white', padding:5}}>{title.title}</Text>
-    )}
-  </View>
-  <View style={{marginTop:10}}>
-    <Text style={{fontSize:12, fontWeight:'bold', color:'white'}}>Total Calories: {foodTitles.reduce((total, title) => total + title.calories, 0)}</Text>
+    </ScrollView>
   </View>
 </View>
 </View>

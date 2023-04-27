@@ -1,3 +1,7 @@
+//correct my fetch request
+//I have an invalid api response format
+//I have an error fetching api
+//can you fix it for me
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import { useState } from 'react';
@@ -15,11 +19,14 @@ export function Ai(){
   // Function to handle sending messages to the API
   const handleSendMessage = async () => {
     if (!input) return; // Don't send an empty message
-
+  
     const userMessage = { role: "user", content: input };
+  
+    // Add user message to the messages state
     setMessages((prevMessages) => [...prevMessages, userMessage]);
-
+  
     const apiEndpoint = `https://api.openai.com/v1/chat/completions`;
+  
     const apiRequestBody = {
       "model": "gpt-3.5-turbo",
       "messages": [
@@ -35,35 +42,50 @@ export function Ai(){
       "max_tokens": 100,
       "stop": "\n"
     };
-
+  
+    const addMessage = (role, content) => {
+      setMessages((prevMessages) => [...prevMessages, { role, content }]);
+    };
+  
     try {
-      const response = await fetch(apiEndpoint, {
-        method: "POST",
+      const response = await axios.post(apiEndpoint, apiRequestBody, {
         headers: {
           "Content-Type": "application/json",
           Authorization: "Bearer " + apiKey,
         },
-        body: JSON.stringify(apiRequestBody),
       });
-
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+  
+      const data = response.data;
       console.log("API response:", JSON.stringify(data, null, 2));
-
+  
       if (!data.choices || data.choices.length === 0 || !data.choices[0].content) {
         throw new Error(`Invalid API response format: ${JSON.stringify(data, null, 2)}`);
       }
-
+  
       const completion = data.choices[0].content.trim();
-      setMessages((prevMessages) => [...prevMessages, { role: "assistant", content: completion }]);
+  
+      // Add ChatGPT message to the messages state
+      addMessage("assistant", completion);
       setInput(""); // Reset input after sending message
     } catch (error) {
       console.error("Error fetching API:", error);
-      // Add a fallback message to the messages state
-      setMessages((prevMessages) => [...prevMessages, { role: "assistant", content: "An error occurred. Please try again later." }]);
+  
+      if (error.response) {
+        console.error("Error details:", JSON.stringify(error.response, null, 2));
+      } else if (Object.keys(error).length === 0 && error.constructor === Object) {
+        console.error("Empty error object");
+      } else {
+        console.error("Error object:", JSON.stringify(error, null, 2));
+      }
+  
+      // Directly add the content from data.choices[0].content to messages state without checking for its validity
+      if (data && data.choices && data.choices[0] && data.choices[0].content) {
+        const completion = data.choices[0].content.trim();
+        addMessage("assistant", completion);
+      } else {
+        // Add a fallback message to the messages state
+        addMessage("assistant", "An error occurred. Please try again later.");
+      }
     }
   };
   
