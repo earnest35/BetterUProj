@@ -5,7 +5,6 @@ import { Workout } from './Workout';
 import { Login } from './Login';
 import { Food } from './Food';
 import { Planner } from './Planner';
-import Goals from './Goals';
 import { PhotoProgression } from './PhotoProgression';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';

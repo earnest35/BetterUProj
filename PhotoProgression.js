@@ -7,6 +7,7 @@ import { Calendar, CalendarList, Agenda } from 'react-native-calendars';
 import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Permissions from 'expo-permissions';
+import { Header } from './Header';
 
 
 
@@ -61,6 +62,7 @@ export function PhotoProgression() {
   
     return (
       <View style={styles.container}>
+        <Header/>
         <View style={styles.cameraContainer}>
           {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
           <Button title="Take Photo" onPress={takePhoto} />
