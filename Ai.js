@@ -8,91 +8,83 @@ import { Button } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlatList } from 'react-native';
 import { TouchableOpacity } from 'react-native';
-console.log(apiKey)
+import axios from 'axios';
 export function Ai(){
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const fetchWithRetry = async (url, options, retries = 3, backoff = 500) => {
-  try {
-    const response = await fetch(url, options);
-    if (response.status === 429 && retries > 0) {
-      await sleep(backoff);
-      return fetchWithRetry(url, options, retries - 1, backoff * 2);
-    }
-    return response;
-  } catch (error) {
-    if (retries <= 0) {
-      throw error;
-    }
-    await sleep(backoff);
-    return fetchWithRetry(url, options, retries - 1, backoff * 2);
-  }
-};
-
-
   // Function to handle sending messages to the API
   const handleSendMessage = async () => {
     if (!input) return; // Don't send an empty message
 
-  const userMessage = { role: "user", content: input };
+    const userMessage = { role: "user", content: input };
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-  // Add user message to the messages state
-  setMessages([...messages, userMessage]);
-
-  try {
     const apiEndpoint = `https://api.openai.com/v1/chat/completions`;
-
     const apiRequestBody = {
-      model: "gpt-3.5-turbo",
-      messages: [
+      "model": "gpt-3.5-turbo",
+      "messages": [
         {
-          role: "system",
-          content:
-            "Explain all concepts like you are a trained fitness professional and do not answer any questions not relating to health or fitness.",
+          "role": "system",
+          "content": "You are a helpful fitness assistant that can only answer questions relating to health or fitness"
         },
-        ...messages,
-        userMessage,
+        {
+          "role": "user",
+          "content": input
+        }
       ],
+      "max_tokens": 100,
+      "stop": "\n"
     };
 
-    const response = await fetchWithRetry(apiEndpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + apiKey,
-      },
-      body: JSON.stringify(apiRequestBody),
-    });
+    try {
+      const response = await fetch(apiEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + apiKey,
+        },
+        body: JSON.stringify(apiRequestBody),
+      });
 
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("API response:", JSON.stringify(data, null, 2));
+
+      if (!data.choices || data.choices.length === 0 || !data.choices[0].content) {
+        throw new Error(`Invalid API response format: ${JSON.stringify(data, null, 2)}`);
+      }
+
+      const completion = data.choices[0].content.trim();
+      setMessages((prevMessages) => [...prevMessages, { role: "assistant", content: completion }]);
+      setInput(""); // Reset input after sending message
+    } catch (error) {
+      console.error("Error fetching API:", error);
+      // Add a fallback message to the messages state
+      setMessages((prevMessages) => [...prevMessages, { role: "assistant", content: "An error occurred. Please try again later." }]);
     }
-
-    const data = await response.json();
-
-    if (!data.choices || !data.choices[0] || !data.choices[0].text) {
-      throw new Error("Invalid API response format");
-    }
-
-    const completion = data.choices[0].text.trim();
-
-    // Add ChatGPT message to the messages state
-    setMessages([...messages, userMessage, { role: "assistant", content: completion }]);
-
-    setInput(""); // Reset input after sending message
-  } catch (error) {
-    console.error("Error fetching API:", error);
-  }
   };
-
+  
+  
+  
   // Function to render messages
-  const renderMessage = ({ item }) => (
-    <View style={styles.message}>
-      <Text style={styles.messageText}>{item.content}</Text>
-    </View>
-  );
+  const renderMessage = ({ item }) => {
+    if (!item.content) {
+      console.error("Missing content for message:", JSON.stringify(item));
+      return null;
+    }
+  
+    const messageContainerStyle = item.role === "user" ? styles.userMessageContainer : styles.assistantMessageContainer;
+    return (
+      <View style={[styles.messageContainer, messageContainerStyle]}>
+        <Text style={styles.messageText}>{item.content}</Text>
+      </View>
+    );
+  };
+  
+    
 
   return (
     <View style={styles.container}>
@@ -119,55 +111,71 @@ const fetchWithRetry = async (url, options, retries = 3, backoff = 500) => {
 };
 export default Ai;
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: '#fff',
   },
   messagesContainer: {
-    flexGrow: 1,
-    justifyContent: 'flex-end',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
   },
-  message: {
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    padding: 8,
-    maxWidth: '75%',
-    marginBottom: 8,
+  messageContainer: {
+    marginBottom: 16,
+    maxWidth: '70%',
+  },
+  userMessageContainer: {
+    backgroundColor: '#eee',
+    alignSelf: 'flex-start',
+  },
+  botMessageContainer: {
+    backgroundColor: '#007AFF',
+    alignSelf: 'flex-end',
   },
   messageText: {
     fontSize: 16,
+    color: '#000',
+    padding: 8,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#e6e6e6',
+    backgroundColor: '#eee',
+    padding: 8,
   },
   input: {
     flex: 1,
     height: 40,
-    backgroundColor: '#f2f2f2',
-    borderRadius: 20,
-    paddingHorizontal: 16,
+    backgroundColor: '#fff',
+    paddingHorizontal: 8,
     marginRight: 8,
   },
   sendButton: {
-    backgroundColor: '#007aff',
+    backgroundColor: '#007AFF',
     borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    padding: 8,
   },
   sendButtonText: {
-    color: '#ffffff',
     fontSize: 16,
-    fontWeight: 'bold',
+    color: '#fff',
   },
-});
+  responseContainer: {
+    alignItems: 'center',
+    marginVertical: 16,
+  },
+  responseText: {
+    fontSize: 16,
+    color: '#007AFF',
+  },
+  assistantMessageContainer: {
+    backgroundColor: "#F3F3F3",
+    alignSelf: "flex-start",
+    maxWidth: "80%",
+    padding: 8,
+    borderRadius: 8,
+    marginVertical: 4,
+    marginLeft: 8,
+  },
+};
 
 /* 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*/

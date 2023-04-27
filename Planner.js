@@ -42,7 +42,7 @@ export function Planner({navigation}){
   const collectionRef = collection(db, 'userWorkouts');
   getDocs(collectionRef)
     .then(querySnapshot => {
-      const data = querySnapshot.docs.map(doc => doc.data().title);
+      const data = querySnapshot.docs.map(doc => doc.data());
       setWorkoutTitles(data);
     })
     .catch(error => console.error('Error getting documents:', error));
@@ -54,7 +54,7 @@ const handleDayPress = (day) => {
   const collectionRef = collection(db, 'userFoods');
   getDocs(collectionRef)
     .then(querySnapshot => {
-      const data = querySnapshot.docs.map(doc => doc.data().title);
+      const data = querySnapshot.docs.map(doc => doc.data());
       setFoodTitles(data);
     })
     .catch(error => console.error('Error getting documents:', error));
@@ -93,27 +93,32 @@ console.log(workoutTitles);
       <View style={{marginTop:10}}>
         {workoutTitles.map((title, index) => 
           <View key={index} style={[plannerStyles.widgetPrompt, {marginBottom:10}]}>
-            <Text style={{fontSize:15,alignContent:'center',textAlign:'center',justifyContent:'center',padding:10}}>{title}</Text>
+            <Text style={{fontSize:15,textAlign:'center',justifyContent:'center',padding:10}}>
+              {title.title}
+              {title.sets && title.reps && title.sets > 0 && <Text> - </Text>}
+    <View style={{flexDirection: 'column',marginTop:5}}>
+      {Array.from(Array(title.sets), (_, index) => 
+        <Text key={index}>Set {index + 1} of {title.reps} reps</Text>
+      )}
+    </View>
+            </Text>
+            
           </View>
         )}
       </View>
     </View>
-
-    <View style={[plannerStyles.widgetPromptDecor,plannerStyles.widgetPrompt,{backgroundColor:'#707070'},{marginTop:20},{position:'relative'},{zIndex:1}]}>
-      <Text style={{fontSize:20}}>Meal</Text>
-      <Text style={{fontSize:20}}>March 30</Text>
-      <Text style={{fontSize:20}}>12:00PM-1:30PM</Text>
-      <View style={{flexDirection:'column'}}>
-        {foodTitles.map((title, index) => 
-          <View key={index} style={{flexDirection: 'row', alignItems: 'center'}}>
-            <View style={{width: 10, height: 10, borderRadius: 5, backgroundColor: 'black', marginRight: 5}}></View>
-            <Text style={{fontSize:16,marginRight:10}}>{title}</Text>
-          </View>
-        )}
-      </View>
-    </View>
+    <Text style={{fontSize:20,textAlign:'center'}}>Meal</Text>
+    <View style={[plannerStyles.widgetPromptDecor, plannerStyles.widgetPrompt, {backgroundColor:'#707070'}, {marginTop:20}, {position:'relative'}, {zIndex:1}]}>
+  <View style={{flexDirection:'row'}}>
+    {foodTitles.map((title, index) => 
+      <Text key={index} style={{fontSize:12, marginRight:5, backgroundColor:'white', padding:5}}>{title.title}</Text>
+    )}
   </View>
-
+  <View style={{marginTop:10}}>
+    <Text style={{fontSize:12, fontWeight:'bold', color:'white'}}>Total Calories: {foodTitles.reduce((total, title) => total + title.calories, 0)}</Text>
+  </View>
+</View>
+</View>
 </ScrollView>
 
     )
