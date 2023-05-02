@@ -10,27 +10,38 @@ import { useState } from 'react';
 import { useEffect } from 'react';
 import { Workout } from './Workout';
 import { Food } from './Food';
+import {Health } from './Health';
 import { onAuthStateChanged } from 'firebase/auth';
-import { Picker } from 'react-native';
 import { PhotoProgression } from './PhotoProgression';
 import { Calendar } from 'react-native-calendars';
 import { FlatList } from 'react-native';
 import { Ai } from './Ai';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { Picker } from '@react-native-picker/picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 const Tab = createBottomTabNavigator();
 export function MainTabs() {
   return (
     <Tab.Navigator>
-      <Tab.Screen name="PhotoProgression" component={PhotoProgression} options={{ headerShown: false }} />
-      <Tab.Screen name="Planner" component={Planner} options={{ headerShown: false }} />
-      <Tab.Screen name="AI" component={Ai} options={{ headerShown: false }} />
-      
+      <Tab.Screen  name="Health"  component={Health}  options={{ headerShown: false, tabBarIcon: ({ focused, color, size }) => (
+      <FontAwesome5 name="heartbeat" size={size} color={color} />), }}/>
+      <Tab.Screen name="Planner" component={Planner} options={{headerShown: false,tabBarIcon: ({ focused, color, size }) => (
+      <MaterialCommunityIcons name="calendar-blank" size={size} color={color} />), }}/>
+      <Tab.Screen name="AI" component={Ai} options={{ headerShown: false,  tabBarIcon: ({ focused, color, size }) => (
+      <FontAwesome name="android" size={size} color={color} /> ),  }} />
     </Tab.Navigator>
   );
 }
 export function Planner({navigation}){
   const [workoutTitles, setWorkoutTitles] = useState([]);
   const [foodTitles, setFoodTitles] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedCollection, setSelectedCollection] = useState('health');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [queriedItems, setQueriedItems] = useState([]);
+
   const [data, setData] = useState([]);
   useEffect(() => {
     setData([
@@ -47,9 +58,6 @@ export function Planner({navigation}){
     })
     .catch(error => console.error('Error getting documents:', error));
 }, []);
-const handleDayPress = (day) => {
-  setSelectedDate(day)
-};
   useEffect(() => {
   const collectionRef = collection(db, 'userFoods');
   getDocs(collectionRef)
@@ -61,6 +69,46 @@ const handleDayPress = (day) => {
 }, []);
 console.log(workoutTitles);
   console.log(foodTitles)
+  const handleCollectionChange = (newCollection) => {
+    setSelectedCollection(newCollection);
+  };
+  
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setSelectedDate(selectedDate);
+      searchItemsByDate(selectedDate);
+    }
+  };
+  
+  // Add this function to show the date picker when needed
+  const showDateTimePicker = () => {
+    setShowDatePicker(true);
+  };
+  const searchItemsByDate = async (date) => {
+    try {
+      const collectionRef = collection(db, selectedCollection);
+      const q = query(
+        collectionRef,
+        where('userId', '==', auth.currentUser.uid),
+        where('date', '>=', date),
+        orderBy('date', 'asc')
+      );
+  
+      const querySnapshot = await getDocs(q);
+      const items = [];
+      querySnapshot.forEach((doc) => {
+        items.push({ id: doc.id, ...doc.data() });
+      });
+  
+      console.log('Items found: ', items);
+      setQueriedItems(items);
+      return items;
+    } catch (error) {
+      console.error('Error searching items: ', error);
+      alert('Error searching items');
+    }
+  };
     return(
       <ScrollView style={{flex:1}}>
   <Header/>
@@ -83,6 +131,27 @@ console.log(workoutTitles);
         </TouchableOpacity>
       </View>
     </View>
+    <Picker
+  selectedValue={selectedCollection}
+  onValueChange={(itemValue) => handleCollectionChange(itemValue)}
+  style={{ width: 200, alignSelf: 'center' }}
+>
+  <Picker.Item label="Health" value="health" />
+  <Picker.Item label="Food" value="food" />
+  <Picker.Item label="Workout" value="workout" />
+</Picker>
+<TouchableOpacity onPress={showDateTimePicker}>
+  <Text>Select Date</Text>
+</TouchableOpacity>
+{showDatePicker && (
+  <DateTimePicker
+    testID="dateTimePicker"
+    value={selectedDate || new Date()}
+    mode="date"
+    display="default"
+    onChange={handleDateChange}
+  />
+)}
   </View>
 
   <View style={{marginBottom: 20}}>

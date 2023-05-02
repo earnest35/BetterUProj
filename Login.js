@@ -25,7 +25,9 @@ export const Login = ({navigation}) => {
           const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           const user = userCredential.user;
           console.log(user);
-          navigation.navigate('Planner');
+          navigation.navigate('MainTabs', {
+            screen: 'Planner',
+          });
         } catch (error) {
           const errorCode = error.code;
           const errorMessage = error.message;
@@ -39,7 +41,9 @@ export const Login = ({navigation}) => {
           const userCredential = await signInWithEmailAndPassword(auth, email, password);
           const user = userCredential.user;
           console.log(user);
-          navigation.navigate('Planner');
+          navigation.navigate('MainTabs', {
+            screen: 'Planner',
+          });
         } catch (error) {
           const errorCode = error.code;
           const errorMessage = error.message;

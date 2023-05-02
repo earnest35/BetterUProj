@@ -10,44 +10,29 @@ import { db } from './Firebase';
 import { addDoc, collection, DocumentReference } from 'firebase/firestore';
 import { foodItems } from './FoodComponent';
 import { Header } from './Header';
+import { auth } from './Firebase';
 export const Food = () => {
   const [selectedFood,setSelectedFood] = useState([]);
   const userFoodCollection = collection(db, 'userFoods');
-  const [userId, setUserId] = useState(null);
 
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserId(user.uid);
-      } else {
-        setUserId(null);
-      }
-    });
-    return unsubscribe;
-  }, []);
-  const foodRef = userId ? collection(userFoodsCollection, userId, 'foods') : null;
-  const viewSelectedWorkouts = () => {
-    setSelectedFood(foods => [...foods, food])
-  }
-  
-  const handleAddFood = (food) => {
-    const alreadySelected = selectedFood.find((selected) => selected.id === food.id);
-    if (!alreadySelected) {
-      addDoc(userFoodCollection,food)
-      .then((docRef) =>{
-        console.log(`Successfully posted ${food.title} with ID:${docRef.id}`)
-       })
-      .catch((error) =>{
-        console.log(`Error adding food ${error}`)
-      })
-      setSelectedFood((prevSelectedFoods) => [...prevSelectedFoods, food]);
-      console.log(`Added ${food.title} to selected foods.`);
-    } else {
-      console.log(`${food.title} is already selected.`);
+  const handleAddFood = async (food) => {
+    if (!auth.currentUser) {
+      alert('User not logged in. Please log in to add workout.');
+      return;
     }
-}
-  
+  const currentUser = auth.currentUser;
+  const currentDate = new Date();
+  const foodWithDateAndUser = { ...food, date: currentDate, userId: currentUser.uid };
+
+  try {
+    await addDoc(userFoodCollection, foodWithDateAndUser);
+    console.log(`Successfully posted ${food.title}`);
+    setSelectedFood((prevSelectedFoods) => [...prevSelectedFoods, food]);
+    console.log(`Added ${food.title} to selected foods.`);
+  } catch (error) {
+    console.log(`Error adding food: ${error}`);
+  }
+};
   return(
     <View style={{flex:1,backgroundColor:'lightgray'}}>
   <Header/>

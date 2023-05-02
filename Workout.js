@@ -9,6 +9,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { useEffect } from 'react';
 import { workoutItems } from './WorkoutComponent';
 import { Picker } from '@react-native-picker/picker';
+import { auth } from './Firebase';
  const sets = [
   { label: '1', value: 1 },
   { label: '2', value: 2 },
@@ -34,72 +35,33 @@ import { Picker } from '@react-native-picker/picker';
     export function Workout(){
       const [selectedWorkout,setSelectedWorkout] = useState([]);
       const [selectedSets, setSelectedSets] = useState(sets[0].value);
-  const [selectedReps, setSelectedReps] = useState(reps[0].value);
+      const [selectedReps, setSelectedReps] = useState(reps[0].value);
       const userWorkoutCollection = collection(db, 'userWorkouts');
       const [userId, setUserId] = useState(null);
-      useEffect(() => {
-        const auth = getAuth();
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-          if (user) {
-            setUserId(user.uid);
-          } else {
-            setUserId(null);
-          }
-        });
-        return unsubscribe;
-      }, []);
-      const foodRef = userId ? collection(userWorkoutCollection, userId, 'workouts') : null;
-      const viewSelectedWorkouts = () => {
+      /*const viewSelectedWorkouts = () => {
         setSelectedWorkout(workouts => [...workouts, workout])
-      }
-      const handleAddWorkout = (workout) => {
-        const alreadySelected = selectedWorkout.find((selected) => selected.id === workout.id);
-        if (!alreadySelected) {
-          addDoc(userWorkoutCollection,workout)
-          .then((docRef) =>{
-            console.log(`Successfully posted ${workout.title} with ID:${docRef.id}`)
-           })
-          .catch((error) =>{
-            console.log(`Error adding workout ${error}`)
-          })
-          setSelectedWorkout((prevSelectedWorkouts) => [...prevSelectedWorkouts, workout]);
-          console.log(`Added ${workout.title} to selected workouts.`);
-        } else {
-          console.log(`${workout.title} is already selected.`);
+      } */
+      const handleAddWorkout = async (workout) => {
+        if (!auth.currentUser) {
+          alert('User not logged in. Please log in to add workout.');
+          return;
         }
-  }
+        const currentUser = auth.currentUser;
+        const currentDate = new Date();
+        const workoutWithDateAndUser = { ...workout, date: currentDate, userId: currentUser.uid };
+      
+        try {
+          await addDoc(userWorkoutCollection, workoutWithDateAndUser);
+          console.log(`Successfully posted ${workout.title}`);
+          setSelectedWorkouts((prevSelectedWorkouts) => [...prevSelectedWorkouts, workout]);
+          console.log(`Added ${workout.title} to selected workouts.`);
+        } catch (error) {
+          console.log(`Error adding workout: ${error}`);
+        }
+      };
       return(
         <View style={{ flex: 1, backgroundColor: 'lightgray' }}>
       <View style={{ marginTop: 30, marginBottom: 30, borderRadius: 5, overflow: 'hidden' }}>
-        <Text>Selected Workouts:</Text>
-        <ScrollView
-          horizontal={true}
-          contentContainerStyle={{
-            flexDirection: 'row',
-            marginBottom: 15,
-            borderRadius: 5,
-            overflow: 'hidden',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          {selectedWorkout.map((workout, index) => (
-            <Text
-              key={index}
-              style={{
-                backgroundColor: 'whitesmoke',
-                color: 'black',
-                padding: 8,
-                marginHorizontal: 5,
-                fontSize: 10,
-                marginBottom: 5,
-                fontSize: 10,
-                marginBottom: 5,
-                fontSize: 10,
-              }}>
-              {workout.title}
-            </Text>
-          ))}
-        </ScrollView>
       </View>
       <FlatList
   data={workoutItems}
