@@ -204,11 +204,6 @@ useEffect(() => {
     />
   )}
 </View>
-<View style={styles.userDataContainer}>
-  {userData.map((item) => (
-    <Text key={item.id}>{item.stressLevel}</Text>
-  ))}
-</View>
         </KeyboardAvoidingView>
         </ScrollView>
     );

@@ -4,7 +4,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import { TouchableOpacity } from 'react-native';
 import { Header } from './Header';
 import { db } from './Firebase';
-import { addDoc, collection, DocumentReference,query,getDocs,deleteDoc,doc } from 'firebase/firestore';
+import { addDoc, collection, DocumentReference,query,getDocs,deleteDoc,doc,where } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { useState } from 'react';
 import { useEffect } from 'react';
@@ -21,7 +21,10 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { auth } from './Firebase';
+
 const Tab = createBottomTabNavigator();
+
 export function MainTabs() {
   return (
     <Tab.Navigator>
@@ -109,53 +112,9 @@ console.log(workoutTitles);
       alert('Error searching items');
     }
   };
-    return(
-      <ScrollView style={{flex:1}}>
-  <Header/>
-
-  <View style={{marginBottom: 20}}> 
-    <View style={plannerStyles.widgetPrompt}>
-      <Text style={plannerStyles.widgetPromptText}>Choose to add a meal or workout*</Text>
-      <View style={{position:'relative',top:150,flexDirection:'row'}}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Food')}
-          style={[plannerStyles.widgetPromptButton,{backgroundColor:'white',color:'black'}]}
-        >
-          <Text style={{ textAlign: 'center',}}>Add Meal</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Workout')}
-          style={[plannerStyles.widgetPromptButton,{backgroundColor:'black',color:'white'}]}
-        >
-          <Text style={{  color:"white",textAlign: 'center' }}>Add Workout</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-    <Picker
-  selectedValue={selectedCollection}
-  onValueChange={(itemValue) => handleCollectionChange(itemValue)}
-  style={{ width: 200, alignSelf: 'center' }}
->
-  <Picker.Item label="Health" value="health" />
-  <Picker.Item label="Food" value="food" />
-  <Picker.Item label="Workout" value="workout" />
-</Picker>
-<TouchableOpacity onPress={showDateTimePicker}>
-  <Text>Select Date</Text>
-</TouchableOpacity>
-{showDatePicker && (
-  <DateTimePicker
-    testID="dateTimePicker"
-    value={selectedDate || new Date()}
-    mode="date"
-    display="default"
-    onChange={handleDateChange}
-  />
-)}
-  </View>
-
-  <View style={{marginBottom: 20}}>
-    <View style={[{marginTop:50},{position:'relative'},{zIndex:1}]}>
+ const WorkoutItems = ({ items }) => {
+    return (
+      <View style={[{marginTop:50},{position:'relative'},{zIndex:1}]}>
       <View>
         <Text style={{fontSize:20,textAlign:'center'}}>Workouts</Text>
       </View>
@@ -175,24 +134,87 @@ console.log(workoutTitles);
 </View>
 
     </View>
-
-    <View style={[{marginTop:10},plannerStyles.widgetPrompt,{backgroundColor:'#707070'}]}>
-  <Text style={{fontSize:20,textAlign:'center'}}>Meal</Text>
-  <View style={[{marginTop:4}, {position:'relative'}, {zIndex:1}]}>
-    <ScrollView horizontal={true} contentContainerStyle={{paddingHorizontal:10}} showsHorizontalScrollIndicator={false}>
-      <View style={[plannerStyles.widgetPromptDecor, plannerStyles.widgetPrompt, {backgroundColor:'#707070'}]}>
+    );
+  };
+   const HealthItems = ({ items }) => {
+    return (
+        <View style={styles.userDataContainer}>
+        {items.map((item) => (
+          <Text key={item.id}>{item.stressLevel}</Text>
+        ))}
+      </View>
+    );
+  };
+   const FoodItems = ({ items }) => {
+    return (
+      <View style={{marginTop:50}}>
+      <Text style={{fontSize:20,textAlign:'center'}}>Meal</Text>
+        <View style={[plannerStyles.widgetPromptDecor, plannerStyles.widgetPrompt, {backgroundColor:'#707070'}]}>
+          
         <View style={{flexDirection:'row'}}>
-          {foodTitles.map((title, index) => 
+          {items.map((title, index) => 
             <Text key={index} style={{fontSize:12, marginRight:5, backgroundColor:'white', padding:5}}>{title.title}</Text>
           )}
         </View>
         <View style={{marginTop:10}}>
-          <Text style={{fontSize:12, fontWeight:'bold', color:'white'}}>Total Calories: {foodTitles.reduce((total, title) => total + title.calories, 0)}</Text>
+          <Text style={{fontSize:12, fontWeight:'bold', color:'white'}}>Total Calories: {items.reduce((total, title) => total + title.calories, 0)}</Text>
+        </View>
         </View>
       </View>
-    </ScrollView>
+    );
+  };
+    return(
+      <ScrollView style={{flex:1}}>
+  <Header/>
+
+  <View style={{ marginBottom: 20 }}>
+  <View style={plannerStyles.widgetPrompt}>
+    <Text style={plannerStyles.widgetPromptText}>Choose to add a meal or workout*</Text>
+    <View style={{ position: 'relative', top: 152, flexDirection: 'row' }}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Food')}
+        style={[plannerStyles.widgetPromptButton, { backgroundColor: 'white', color: 'black' }]}
+      >
+        <Text style={{ textAlign: 'center' }}>Add Meal</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Workout')}
+        style={[plannerStyles.widgetPromptButton, { backgroundColor: 'black', color: 'white' }]}
+      >
+        <Text style={{ color: "white", textAlign: 'center' }}>Add Workout</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+  <View style={plannerStyles.pickerContainer}>
+    <Picker
+      selectedValue={selectedCollection}
+      onValueChange={(itemValue) => handleCollectionChange(itemValue)}
+      style={plannerStyles.picker}
+    >
+      <Picker.Item label="Health" value="health" />
+      <Picker.Item label="Food" value="food" />
+      <Picker.Item label="Workout" value="workout" />
+    </Picker>
+    <TouchableOpacity onPress={showDateTimePicker} style={plannerStyles.datePickerButton}>
+      <Text style={plannerStyles.datePickerButtonText}>Select Date</Text>
+    </TouchableOpacity>
+    {showDatePicker && (
+      <DateTimePicker
+        testID="dateTimePicker"
+        value={selectedDate || new Date()}
+        mode="date"
+        display="default"
+        onChange={handleDateChange}
+      />
+    )}
   </View>
 </View>
+
+  <View style={{marginTop: 100}}>
+  {selectedCollection === 'health' && <HealthItems items={queriedItems} />}
+{selectedCollection === 'food' && <FoodItems items={queriedItems} />}
+{selectedCollection === 'workout' && <WorkoutItems items={queriedItems} />}
+
 </View>
 </ScrollView>
 
@@ -260,10 +282,34 @@ const plannerStyles = StyleSheet.create({
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.5,
       shadowRadius: 2,
-      marginBottom:30
+      marginBottom:30,
+    },
+    pickerContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+      marginTop: 0,
+      width: '75%',
+      alignSelf: 'center',
+      backgroundColor: '#D3D3D3',
+      borderRadius: 5,
+      padding: 5,
+    },
+    picker: {
+      flex: 1,
+      height: 10,
+      marginBottom: 8,
+    },
+    datePickerButton: {
+      backgroundColor: 'white',
+      paddingHorizontal: 10,
+      paddingVertical: 3,
+      borderRadius: 5,
+      marginLeft: 10,
+      height: 30,
+    },
       
-  }
-})
+  });
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
@@ -296,13 +342,5 @@ const calendarStyles = StyleSheet.create({
     arrowColor: 'black',
   }
 })
-/* <Calendar
-   onDayPress={(day) => setSelectedDate(day.dateString)}
-   markedDates={{
-     [selectedDate]: { selected: true }
-   }}
-    style={calendarStyles.main}
-    theme={calendarStyles.theme}
-  />*/
-  //I'll figure it out someday just not rn
+
   
