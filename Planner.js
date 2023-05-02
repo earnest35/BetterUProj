@@ -4,7 +4,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import { TouchableOpacity } from 'react-native';
 import { Header } from './Header';
 import { db } from './Firebase';
-import { addDoc, collection, DocumentReference,query,getDocs,deleteDoc,doc,where } from 'firebase/firestore';
+import { addDoc, collection, DocumentReference,query,getDocs,deleteDoc,doc,where,orderBy } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { useState } from 'react';
 import { useEffect } from 'react';
@@ -46,32 +46,8 @@ export function Planner({navigation}){
   const [queriedItems, setQueriedItems] = useState([]);
 
   const [data, setData] = useState([]);
-  useEffect(() => {
-    setData([
-      { key: 'lift', title: 'Lift', subTitle: selectedDate, items: workoutTitles },
-      { key: 'meal', title: 'Meal', subTitle: selectedDate, items: foodTitles }
-    ]);
-  }, [selectedDate, workoutTitles, foodTitles]);
-  useEffect(() => {
-  const collectionRef = collection(db, 'userWorkouts');
-  getDocs(collectionRef)
-    .then(querySnapshot => {
-      const data = querySnapshot.docs.map(doc => doc.data());
-      setWorkoutTitles(data);
-    })
-    .catch(error => console.error('Error getting documents:', error));
-}, []);
-  useEffect(() => {
-  const collectionRef = collection(db, 'userFoods');
-  getDocs(collectionRef)
-    .then(querySnapshot => {
-      const data = querySnapshot.docs.map(doc => doc.data());
-      setFoodTitles(data);
-    })
-    .catch(error => console.error('Error getting documents:', error));
-}, []);
-console.log(workoutTitles);
-  console.log(foodTitles)
+  const [userData, setUserData] = useState([]);
+
   const handleCollectionChange = (newCollection) => {
     setSelectedCollection(newCollection);
   };
@@ -90,7 +66,22 @@ console.log(workoutTitles);
   };
   const searchItemsByDate = async (date) => {
     try {
-      const collectionRef = collection(db, selectedCollection);
+      let collectionId;
+      switch (selectedCollection) {
+        case 'health':
+          collectionId = 'healthData';
+          break;
+        case 'food':
+          collectionId = 'userFoods';
+          break;
+        case 'workout':
+          collectionId = 'userWorkouts';
+          break;
+        default:
+          return;
+      }
+  
+      const collectionRef = collection(db, collectionId);
       const q = query(
         collectionRef,
         where('userId', '==', auth.currentUser.uid),
@@ -101,10 +92,10 @@ console.log(workoutTitles);
       const querySnapshot = await getDocs(q);
       const items = [];
       querySnapshot.forEach((doc) => {
-        items.push({ id: doc.id, ...doc.data() });
+        items.push({ id: doc.id, ...doc.data(), collection: collectionId });
       });
   
-      console.log('Items found: ', items);
+      console.log(`Items found for collection ${collectionId}: `, items);
       setQueriedItems(items);
       return items;
     } catch (error) {
@@ -112,6 +103,25 @@ console.log(workoutTitles);
       alert('Error searching items');
     }
   };
+  useEffect(() => {
+    let isMounted = true;
+  
+    const fetchData = async () => {
+      if (isMounted) {
+        await searchItemsByDate(selectedDate);
+      }
+    };
+  
+    fetchData();
+  
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedCollection]);
+  
+  useEffect(() => {
+    searchItemsByDate(selectedDate);
+  }, [selectedCollection]);
  const WorkoutItems = ({ items }) => {
     return (
       <View style={[{marginTop:50},{position:'relative'},{zIndex:1}]}>
@@ -343,4 +353,23 @@ const calendarStyles = StyleSheet.create({
   }
 })
 
-  
+  /*  useEffect(() => {
+  const collectionRef = collection(db, 'userWorkouts');
+  getDocs(collectionRef)
+    .then(querySnapshot => {
+      const data = querySnapshot.docs.map(doc => doc.data());
+      setWorkoutTitles(data);
+    })
+    .catch(error => console.error('Error getting documents:', error));
+}, []);
+  useEffect(() => {
+  const collectionRef = collection(db, 'userFoods');
+  getDocs(collectionRef)
+    .then(querySnapshot => {
+      const data = querySnapshot.docs.map(doc => doc.data());
+      setFoodTitles(data);
+    })
+    .catch(error => console.error('Error getting documents:', error));
+}, []); 
+console.log(workoutTitles);
+  console.log(foodTitles) */

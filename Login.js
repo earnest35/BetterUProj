@@ -68,14 +68,14 @@ export const Login = ({navigation}) => {
           <Text style={{color:'white',fontSize:20,textAlign:'center'}}>Login</Text>
             <Text style={{color:'white',fontSize:15,}}>Email</Text>
             <TextInput
-            placeholder="JohnDoe@gmail.com"
+            placeholder="Email"
             value={email}
             onChangeText={handleEmailChange}
             style={styles.input}/>
             <Text style={{color:'white',fontSize:15,marginTop:10}}>Password</Text>
             <TextInput
             value={password}
-            placeholder="Password123"
+            placeholder="Password"
            onChangeText={handlePasswordChange}
             secureTextEntry
             style={styles.input}/>
