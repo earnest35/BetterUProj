@@ -14,12 +14,16 @@ const openai = new OpenAIApi(configuration);
 app.post("/api/chat", async (req, res) => {
   try {
     const { input } = req.body;
+    const messages = [
+      { role: "system", content: "Hello! I'm your personal assistant for health and fitness. Please ask me any questions related to health and fitness." },
+      { role: "user", content: input }
+    ];
     const completion = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: input }],
+      messages
     });
 
-    res.json({ response: completion.data.choices[0].message.content });
+    res.json({ response: completion.data.choices[0].content });
   } catch (error) {
     console.error("Error fetching API:", error);
     res.status(500).json({ error: "An error occurred. Please try again later." });

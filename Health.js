@@ -28,6 +28,8 @@ export const Health = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
 const [selectedDate, setSelectedDate] = useState(new Date());
 const [userData, setUserData] = useState([]);
+const [journalInput, setJournalInput] = useState('');
+
 
 useEffect(() => {
     searchItemsByDate(selectedDate);
@@ -62,6 +64,7 @@ useEffect(() => {
         moodLevel,
         sleepHours,
         exerciseMinutes,
+        journalInput,
         date: new Date(),
         userId: auth.currentUser.uid,
       };
@@ -182,6 +185,8 @@ useEffect(() => {
              multiline
              numberOfLines={4}
              textAlignVertical="top"
+             value={journalInput}
+            onChangeText={setJournalInput}
            />
         </View>
         <View style={styles.buttonContainer}>
@@ -193,17 +198,6 @@ useEffect(() => {
         </View>
         </View>
         </TouchableWithoutFeedback>
-        <View style={styles.datePickerContainer}>
-  <Button title="Choose Date" onPress={showDatepicker} />
-  {showDatePicker && (
-    <DateTimePicker
-      value={selectedDate}
-      mode="date"
-      display="default"
-      onChange={handleDateChange}
-    />
-  )}
-</View>
         </KeyboardAvoidingView>
         </ScrollView>
     );

@@ -33,58 +33,80 @@ export const Food = () => {
     console.log(`Error adding food: ${error}`);
   }
 };
-  return(
-    <View style={{flex:1,backgroundColor:'lightgray'}}>
-  <Header/>
-  <View style={{marginTop:30,marginBottom:30,borderRadius:5,overflow:'hidden'}}>
-    <Text>Selected Foods:</Text>
-    <ScrollView horizontal={true} contentContainerStyle={{flexDirection:'row', marginBottom:15, borderRadius:5, overflow:'hidden', justifyContent:'center', alignItems:'center'}}>
-    {selectedFood.map((food,index) => (
-      <Text key={index} style={{backgroundColor:'whitesmoke',color:'black',padding:8,marginHorizontal:5,fontSize:10,marginBottom: 5,fontSize:10}}>{food.title}</Text>
-    ))}
-    </ScrollView>
-  </View>
-  <FlatList
-    data={foodItems}
-    numColumns={2}
-    keyExtractor={(item) => item.id.toString()}
-    contentContainerStyle = {{ minHeight:'100%'}}
-    renderItem={({item}) => (
-      <View style={foodPageStyles.column} >
-        <View style={[foodPageStyles.content]}>
+return (
+  <View style={{ flex: 1, backgroundColor: 'lightgray', paddingTop: 20 }}>
+    <Header />
+    <View style={foodPageStyles.selectedFoodsContainer}>
+      <Text style={foodPageStyles.selectedFoodsTitle}>Selected Foods:</Text>
+      <ScrollView
+        horizontal={true}
+        contentContainerStyle={foodPageStyles.selectedFoodsScroll}
+      >
+        {selectedFood.map((food, index) => (
+          <Text
+            key={index}
+            style={foodPageStyles.selectedFoodItem}
+          >
+            {food.title}
+          </Text>
+        ))}
+      </ScrollView>
+    </View>
+    <FlatList
+      data={foodItems}
+      numColumns={2}
+      keyExtractor={(item) => item.id.toString()}
+      contentContainerStyle={{ paddingHorizontal: 10 }}
+      renderItem={({ item }) => (
+        <View style={foodPageStyles.card}>
+          <View style={foodPageStyles.cardContent}>
             <Image source={item.source} style={foodPageStyles.image} />
-            <Text style={foodPageStyles.text}>{item.title}</Text>
-            <Text style={[foodPageStyles.text,{position:'relative'},{right:'20%'},{bottom:'5%'}]}>{item.calories} calories</Text>
-            <Text style={foodPageStyles.addNow}
-            onPress={() => handleAddFood(item)}
-            >ADD NOW</Text>
+            <Text style={foodPageStyles.title}>{item.title}</Text>
+            <Text style={foodPageStyles.calories}>{item.calories} calories</Text>
+            <TouchableOpacity
+              onPress={() => handleAddFood(item)}
+              style={foodPageStyles.addButton}
+            >
+              <Text style={foodPageStyles.addButtonText}>Add Now</Text>
+            </TouchableOpacity>
           </View>
-      </View>
-    )}
-  />
-</View>
+        </View>
+      )}
+    />
+  </View>
+);
+      }
 
-  );
-}
 const foodPageStyles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  selectedFoodsContainer: {
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    paddingBottom: 10,
   },
-  column: {
-    flex: 1,
+  selectedFoodsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  selectedFoodsScroll: {
+    flexDirection: 'row',
+    marginBottom: 15,
+  },
+  selectedFoodItem: {
+    backgroundColor: 'whitesmoke',
+    color: 'black',
+    padding: 8,
     marginHorizontal: 5,
-    marginBottom: 10,
-  },
-  content: {
-    backgroundColor: '#fff',
-    height:250,
+    fontSize: 10,
     borderRadius: 5,
+  },
+  card: {
+    flex: 1,
+    backgroundColor: '#fff',
+    margin: 10,
+    borderRadius: 10,
     overflow: 'hidden',
+  },
+  cardContent: {
     alignItems: 'center',
     padding: 10,
   },
@@ -93,21 +115,24 @@ const foodPageStyles = StyleSheet.create({
     height: 150,
     resizeMode: 'cover',
   },
-  text: {
+  title: {
     fontSize: 16,
     fontWeight: 'bold',
     marginTop: 10,
     marginBottom: 2,
   },
-  addNow: {
-    backgroundColor: 'blue',
-    color: '#fff',
-    padding: 5,
-    borderRadius: 5,
-    marginTop: 5,
-    alignSelf: 'flex-end',
-    position:'relative',
-    left:'10%',
-    bottom:'10%'
+  calories: {
+    fontSize: 14,
+    marginBottom: 10,
   },
-});
+  addButton: {
+    backgroundColor: 'blue',
+    paddingHorizontal: 20,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+})

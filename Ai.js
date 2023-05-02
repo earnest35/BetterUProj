@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlatList } from 'react-native';
 import { TouchableOpacity } from 'react-native';
 const { Configuration, OpenAIApi } = require("openai");
+import { KeyboardAvoidingView } from 'react-native';
 export function Ai(){
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState("");
@@ -40,7 +41,7 @@ export function Ai(){
   };
   
   const getChatCompletion = async (input) => {
-    const response = await fetch("http://172.24.218.147:3001/api/chat", {
+    const response = await fetch("http://172.26.150.213:3001/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ input }),
@@ -73,26 +74,32 @@ export function Ai(){
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={messages}
-        renderItem={renderMessage}
-        keyExtractor={(item, index) => index.toString()}
-        contentContainerStyle={styles.messagesContainer}
-        inverted
-      />
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          value={input}
-          onChangeText={setInput}
-          placeholder="Type a message..."
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardAvoidingView}
+      >
+        <FlatList
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={(item, index) => index.toString()}
+          contentContainerStyle={styles.messagesContainer}
+          inverted
         />
-        <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
-          <Text style={styles.sendButtonText}>Send</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={input}
+            onChangeText={setInput}
+            placeholder="Type a message..."
+          />
+          <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
+            <Text style={styles.sendButtonText}>Send</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
+  
 };
 export default Ai;
 
@@ -161,6 +168,9 @@ const styles = {
     marginVertical: 4,
     marginLeft: 8,
   },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
 };
 /*
 const { Configuration, OpenAIApi } = require("openai");
@@ -179,3 +189,4 @@ const completion =  await openai.createChatCompletion({
 console.log(completion.data.choices[0].message);
 }
 getChatCompletion(); */
+/* const response = await fetch("http://172.24.218.147:3001/api/chat"*/

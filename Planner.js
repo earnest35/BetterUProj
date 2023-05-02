@@ -129,7 +129,7 @@ export function Planner({navigation}){
         <Text style={{fontSize:20,textAlign:'center'}}>Workouts</Text>
       </View>
       <View style={{marginTop:10}}>
-  {workoutTitles.map((title, index) => 
+  {items.map((title, index) => 
     <View key={index} style={[plannerStyles.widgetPrompt, {marginBottom:10}]}>
         <Text style={{fontSize:20,textAlign:'center'}}>{title.title}</Text>
         {title.sets && title.reps && title.sets > 0 && <Text> - </Text>}
@@ -146,12 +146,23 @@ export function Planner({navigation}){
     </View>
     );
   };
-   const HealthItems = ({ items }) => {
+  const HealthItems = ({ items }) => {
     return (
+      <View>
+        <Text style={{ fontSize: 20, textAlign: 'center', marginTop: 50 }}>
+          Health
+        </Text>
         <View style={styles.userDataContainer}>
-        {items.map((item) => (
-          <Text key={item.id}>{item.stressLevel}</Text>
-        ))}
+          {items.map((item,index) => (
+            <View key={index} style={plannerStyles.widgetPrompt}>
+              <Text>Stress Level: {item.stressLevel}</Text>
+              <Text>Hydration Level: {item.hydrationLevel}</Text>
+              <Text>Exercise Minutes: {item.exerciseMinutes}</Text>
+              <Text>Sleep Hours: {item.sleepHours}</Text>
+              <Text>Journal:{item.journalInput}</Text>
+            </View>
+          ))}
+        </View>
       </View>
     );
   };
@@ -328,6 +339,12 @@ const styles = StyleSheet.create({
     right: 0,
     height: '100%',
     justifyContent: 'flex-end',
+  },
+  itemContainer: {
+    padding: 10,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 5,
+    marginBottom: 10,
   },
 });
 const calendarStyles = StyleSheet.create({

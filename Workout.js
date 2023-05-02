@@ -33,7 +33,7 @@ import { auth } from './Firebase';
 ];
 
     export function Workout(){
-      const [selectedWorkout,setSelectedWorkout] = useState([]);
+      const [selectedWorkouts,setSelectedWorkouts] = useState([]);
       const [selectedSets, setSelectedSets] = useState(sets[0].value);
       const [selectedReps, setSelectedReps] = useState(reps[0].value);
       const userWorkoutCollection = collection(db, 'userWorkouts');
@@ -59,103 +59,137 @@ import { auth } from './Firebase';
           console.log(`Error adding workout: ${error}`);
         }
       };
-      return(
-        <View style={{ flex: 1, backgroundColor: 'lightgray' }}>
-      <View style={{ marginTop: 30, marginBottom: 30, borderRadius: 5, overflow: 'hidden' }}>
-      </View>
-      <FlatList
-  data={workoutItems}
-  numColumns={2}
-  keyExtractor={(item) => item.id.toString()}
-  contentContainerStyle={{ minHeight: '100%' }}
-  renderItem={({ item }) => (
-    <View style={workoutPageStyles.column}>
-      <View style={[workoutPageStyles.content, { height: 'auto' }]}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', marginRight: 10 }}>{item.title}</Text>
-          <Picker
-            selectedValue={selectedSets[item.id]}
-            onValueChange={(itemValue, itemIndex) => setSelectedSets({ ...selectedSets, [item.id]: itemValue })}
-            style={{ height: 30, width: 80 }}
-            itemStyle={{ fontSize: 12 }}
-            key={`${item.id}-sets-picker`}
-          >
-            {sets.map((set) => (
-              <Picker.Item key={set.value} label={set.label} value={set.value} />
-            ))}
-          </Picker>
-          <Picker
-            selectedValue={selectedReps[item.id]}
-            onValueChange={(itemValue, itemIndex) => setSelectedReps({ ...selectedReps, [item.id]: itemValue })}
-            style={{ height: 30, width: 80 }}
-            itemStyle={{ fontSize: 12 }}
-            key={`${item.id}-reps-picker`}
-          >
-            {reps.map((rep) => (
-              <Picker.Item key={rep.value} label={rep.label} value={rep.value} />
-            ))}
-          </Picker>
-        </View>
-        <Image source={item.source} style={workoutPageStyles.image} />
-        <TouchableOpacity>
+      return (
+        <View style={{ flex: 1, backgroundColor: 'lightgray', paddingTop: 20 }}>
+          <View style={workoutPageStyles.selectedWorkoutsContainer}>
+      <Text style={workoutPageStyles.selectedWorkoutsTitle}>Selected Workouts:</Text>
+      <ScrollView
+        horizontal={true}
+        contentContainerStyle={workoutPageStyles.selectedWorkoutsScroll}
+      >
+        {selectedWorkouts.map((workout, index) => (
           <Text
-            style={workoutPageStyles.addNow}
-            onPress={() => handleAddWorkout(item)}>
-            Add Now
+            key={index}
+            style={workoutPageStyles.selectedWorkoutItem}
+          >
+            {workout.title}
           </Text>
-        </TouchableOpacity>
-      </View>
+        ))}
+      </ScrollView>
     </View>
-  )}
-/>
-
-
-
-    </View>
-  );
-};
-
+          <FlatList
+            data={workoutItems}
+            numColumns={2}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={{ paddingHorizontal: 10 }}
+            renderItem={({ item }) => (
+              <View style={workoutPageStyles.card}>
+                <View style={workoutPageStyles.cardContent}>
+                  <Text style={workoutPageStyles.title}>{item.title}</Text>
+                  <Image source={item.source} style={workoutPageStyles.image} />
+                  <View style={workoutPageStyles.pickerContainer}>
+                    <Picker
+                      selectedValue={selectedSets[item.id]}
+                      onValueChange={(itemValue, itemIndex) =>
+                        setSelectedSets({ ...selectedSets, [item.id]: itemValue })
+                      }
+                      style={workoutPageStyles.picker}
+                      itemStyle={{ fontSize: 12 }}
+                      key={`${item.id}-sets-picker`}
+                    >
+                      {sets.map((set) => (
+                        <Picker.Item key={set.value} label={set.label} value={set.value} />
+                      ))}
+                    </Picker>
+                    <Picker
+                      selectedValue={selectedReps[item.id]}
+                      onValueChange={(itemValue, itemIndex) =>
+                        setSelectedReps({ ...selectedReps, [item.id]: itemValue })
+                      }
+                      style={workoutPageStyles.picker}
+                      itemStyle={{ fontSize: 12 }}
+                      key={`${item.id}-reps-picker`}
+                    >
+                      {reps.map((rep) => (
+                        <Picker.Item key={rep.value} label={rep.label} value={rep.value} />
+                      ))}
+                    </Picker>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => handleAddWorkout(item)}
+                    style={workoutPageStyles.addButton}
+                  >
+                    <Text style={workoutPageStyles.addButtonText}>Add Now</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          />
+        </View>
+      );         }
+      const workoutPageStyles = StyleSheet.create({
+        card: {
+          flex: 1,
+          backgroundColor: '#fff',
+          margin: 10,
+          borderRadius: 10,
+          overflow: 'hidden',
+        },
+        cardContent: {
+          alignItems: 'center',
+          padding: 10,
+        },
+        title: {
+          fontSize: 18,
+          fontWeight: 'bold',
+          marginBottom: 10,
+        },
+        image: {
+          width: 150,
+          height: 150,
+          resizeMode: 'cover',
+        },
+        pickerContainer: {
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          width: '100%',
+          marginTop: 10,
+          marginBottom: 15,
+        },
+        picker: {
+          width: '48%',
+          height: 30,
+        },
+        addButton: {
+          backgroundColor: 'blue',
+          paddingHorizontal: 20,
+          paddingVertical: 5,
+          borderRadius: 5,
+        },
+        addButtonText: {
+          color: '#fff',
+          fontSize: 16,
+        },selectedWorkoutsContainer: {
+          paddingHorizontal: 20,
+          paddingBottom: 10,
+        },
+        selectedWorkoutsTitle: {
+          fontSize: 16,
+          fontWeight: 'bold',
+          marginBottom: 5,
+        },
+        selectedWorkoutsScroll: {
+          flexDirection: 'row',
+          marginBottom: 15,
+        },
+        selectedWorkoutItem: {
+          backgroundColor: 'whitesmoke',
+          color: 'black',
+          padding: 8,
+          marginHorizontal: 5,
+          fontSize: 10,
+          borderRadius: 5,
+        },
+      });
       
-
-const workoutPageStyles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  column: {
-    flex: 1,
-    marginHorizontal: 5,
-    marginBottom: 10,
-  },
-  content: {
-    backgroundColor: '#fff',
-    height:300,
-    borderRadius: 5,
-    overflow: 'hidden',
-    alignItems: 'center',
-    padding: 10,
-  },
-  image: {
-    width: 150,
-    height: 150,
-    resizeMode: 'cover',
-  },
-  text: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 10,
-    marginBottom: 5,
-  },
-  addNow: {
-    backgroundColor: 'blue',
-    color: '#fff',
-    padding: 5,
-    borderRadius: 5,
-    marginTop: 5,
-    alignSelf: 'flex-end'
-  },
-});
+         
